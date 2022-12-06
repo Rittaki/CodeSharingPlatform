@@ -1,5 +1,6 @@
 package platform;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,11 +16,14 @@ import java.util.List;
 
 @Controller
 public class WebController {
+    @Autowired
+    CodeService service;
+
     @GetMapping(value = "/code/{id}", produces = MediaType.TEXT_HTML_VALUE)
-    public String get(HttpServletResponse response, @PathVariable int id, Model model) {
-        String code = CodeSharingPlatform.codeList.get(id - 1).getCode();
+    public String get(HttpServletResponse response, @PathVariable Long id, Model model) {
+        String code = service.findCodeById(id).get().getCode();
         model.addAttribute("code", code);
-        String date = CodeSharingPlatform.codeList.get(id - 1).getDate();
+        String date = service.findCodeById(id).get().getDate();
         model.addAttribute("date", date);
         return "code_snippet";
     }
@@ -31,14 +35,7 @@ public class WebController {
 
     @GetMapping(value = "/code/latest", produces = MediaType.TEXT_HTML_VALUE)
     public String getLatest(HttpServletResponse response, Model model) {
-        List<Code> answer = new ArrayList<>();
-        int count = CodeSharingPlatform.codeList.size();
-        for (int i = count - 1; i > count - 11; i--) {
-            answer.add(CodeSharingPlatform.codeList.get(i));
-            if (i == 0) {
-                break;
-            }
-        }
+        List<Code> answer = service.latest();
         model.addAttribute("snippets", answer);
         return "latest";
     }

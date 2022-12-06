@@ -11,8 +11,6 @@ import java.util.List;
 @SpringBootApplication
 @RestController
 public class CodeSharingPlatform {
-    public static List<Code> codeList = new ArrayList<>();
-
     public static void main(String[] args) {
         SpringApplication.run(CodeSharingPlatform.class, args);
     }
