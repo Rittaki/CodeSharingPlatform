@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,25 +23,47 @@ public class APIController {
     @Autowired
     CodeService service;
 
-    @GetMapping(value = "/api/code/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Code> get(@PathVariable Long id) {
-        var code = service.findCodeById(id);
+    @GetMapping(value = "/api/code/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Code> get(@PathVariable String uuid) {
+        var code = service.findCodeByUuid(uuid);
         if (code.isPresent()) {
+            if (code.get().getTime() > 0) {
+                code.get().setTime(Duration.between(LocalDateTime.now(), code.get().getDestroyed()).getSeconds());
+                if (code.get().getTime() <= 0L) {
+                    service.deleteCode(code.get());
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find resource");
+                }
+            }
+
+            int views = code.get().getViews();
+            if (views == 0 && code.get().isViewsB()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find resource");
+            }
+            if (views > 0) {
+                code.get().setViews(views - 1);
+                if (code.get().getViews() <= 0) {
+                    service.deleteCode(code.get());
+                }
+            }
+
+            service.saveCode(code.get());
             return new ResponseEntity<>(code.get(), HttpStatus.OK);
         }
         else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id doesn't exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "uuid doesn't exist");
         }
     }
 
     @PostMapping(value = "/api/code/new", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> post(@RequestBody Code code) {
+        LocalDateTime created = LocalDateTime.now();
+        LocalDateTime destroyed = created.plusSeconds(code.getTime());
         UUID uuid = UUID.randomUUID();
         String randomUUIDString = uuid.toString();
-//        Code recivedCode = service.saveCode(new Code(code.getCode(), code.getTime(), code.getViews()));
-        Code recivedCode = service.saveCode(new Code(code.getCode()));
-//        Long idx = recivedCode.getId();
-//        Map<String, String> m = Map.of("id", Long.toString(idx));
+        service.saveCode(new Code(code.getCode(), code.getTime(),
+                                            code.getViews(), randomUUIDString,
+                                            created, destroyed));
+
         Map<String, String> m = Map.of("id", randomUUIDString);
         return new ResponseEntity<>(m, HttpStatus.OK);
     }

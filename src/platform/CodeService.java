@@ -18,12 +18,19 @@ public class CodeService {
     public Optional<Code> findCodeById(Long id) {
         return codesRepository.findById(id);
     }
+    public Optional<Code> findCodeByUuid(String uuid) {
+        return codesRepository.findByUuid(uuid);
+    }
 
     public Code saveCode(Code code) {
         return codesRepository.save(code);
     }
 
     public List<Code> latest() {
-        return codesRepository.findTop10ByOrderByDateDesc();
+        return codesRepository.findTop10ByTimeBFalseAndViewsBFalseOrderByDateDesc();
+    }
+
+    public void deleteCode(Code code) {
+        codesRepository.delete(code);
     }
 }

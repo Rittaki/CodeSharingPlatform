@@ -10,7 +10,9 @@
         <script>
             function send() {
                 let object = {
-                    "code": document.getElementById("code_snippet").value
+                    "code": document.getElementById("code_snippet").value,
+                    "time": document.getElementById("time_restriction").value,
+                    "views": document.getElementById("views_restriction").value
                 };
                 
                 let json = JSON.stringify(object);
@@ -30,10 +32,10 @@
     <textarea id="code_snippet">// write your code here</textarea>
     <br>
     <span>Time restriction: </span>
-    <input type="number" id="time" value="0"/>
+    <input id="time_restriction" type="text" value="0"/>
     <br>
     <span>Views restriction: </span>
-    <input type="number" id="view" value="0"/>
+    <input id="views_restriction" type="text" value="0"/>
     <br>
     <button id="send_snippet" type="submit" onclick="send()">Submit</button>
     </body>

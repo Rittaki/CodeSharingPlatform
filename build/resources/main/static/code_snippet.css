@@ -1,0 +1,11 @@
+#load_date {
+  color: green;
+}
+#code_snippet {
+  padding: 5px;
+  background-color: lightgrey;
+  width: 500px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+}
